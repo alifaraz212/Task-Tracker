@@ -1,0 +1,12 @@
+services:
+  db:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: tasktracker
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+volumes:
+  db_data:
