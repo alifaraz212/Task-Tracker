@@ -77,6 +77,25 @@ def insert_task(conn, title, description, priority):
     cursor.close()
 
 
+def fetch_tasks(conn):
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM tasks")
+    rows = cursor.fetchall()
+    conn.commit()
+    cursor.close()
+    return rows
+
+
+def view_tasks(conn):
+    rows = fetch_tasks(conn)
+    if not rows:
+        print("No tasks found.")
+        return
+
+    for row in rows:
+        print(f"ID: {row[0]}, Title: {row[1]}, Description: {row[2]}, Status: {row[3]}, Priority: {row[4]}, Created At: {row[5]}, Completed At: {row[6]}")
+
+
 '''while True:
     print("\n===Task Tracker Menu===")
 print("1. Add Task")
@@ -92,3 +111,4 @@ if __name__ == "__main__":
     conn = connect_db()
     create_table(conn)
     add_task(conn)
+    view_tasks(conn)
