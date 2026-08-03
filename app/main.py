@@ -51,6 +51,41 @@ def create_table(conn):
     print("Tasks table ready")
 
 
+def add_task(conn):
+    print("\n===Add new Task===")
+    title = input("Enter task title: ").strip()
+    if not title:
+        print("Task title cannot be empty.")
+        return
+    description = input("Enter task description: ").strip()
+    priority = input(
+        "Enter priority ('low', 'medium', 'high'): ").strip().lower()
+    if priority not in ['low', 'medium', 'high']:
+        print("Invalid priority. Defaulting to 'medium'.")
+        priority = 'medium'
+    cursor = conn.cursor()
+    cursor.execute(
+        "INSERT INTO tasks(title,description,priority) VALUES (%s, %s, %s)",
+        (title, description, priority)
+
+    )
+    conn.commit()
+    cursor.close()
+    print("Task added successfully!")
+
+
+'''while True:
+    print("\n===Task Tracker Menu===")
+print("1. Add Task")
+print("2. View Tasks")
+print("3. Update Task")
+print("4. Delete Task")
+print("5. Status")
+print("6. Exit")
+choice = input("Choose an option: ")
+'''
+
 if __name__ == "__main__":
     conn = connect_db()
     create_table(conn)
+    add_task(conn)
