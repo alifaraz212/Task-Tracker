@@ -131,6 +131,70 @@ def view_tasks(conn):
         print(
             f"{row[0]:<5} {row[1]:<20} {row[3]:<15} {row[4]:<10} {str(row[5]):<25}")
 
+# ========================= Update Task ========================
+
+
+def update_task_db(conn, task_id, field, new_value):
+    allowed_fields = ["title", "description", "status", "priority"]
+    if field not in allowed_fields:
+        return False
+
+    cursor = conn.cursor()
+
+    if field == "status" and new_value == "done":
+        # when marked done, automatically set completed_at timestamp
+        cursor.execute(
+            "UPDATE tasks SET status = %s, completed_at = CURRENT_TIMESTAMP WHERE id = %s",
+            (new_value, task_id)
+        )
+    else:
+        query = f"UPDATE tasks SET {field} = %s WHERE id = %s"
+        cursor.execute(query, (new_value, task_id))
+
+    conn.commit()
+    success = cursor.rowcount > 0
+    cursor.close()
+    return success
+
+
+def update_task(conn):
+    print("\n=== Update Task ===")
+    try:
+        task_id = int(input("Enter task ID: ").strip())
+    except ValueError:
+        print("Invalid ID. Please enter a number.")
+        return
+
+    field = input(
+        "Which field to update? (title/description/status/priority): ").strip().lower()
+    if field not in ['title', 'description', 'status', 'priority']:
+        print("Invalid field.")
+        return
+
+    if field == "status":
+        new_value = input(
+            "Enter new status (todo/in_progress/done): ").strip().lower()
+        if new_value not in ['todo', 'in_progress', 'done']:
+            print("Invalid status.")
+            return
+    elif field == "priority":
+        new_value = input(
+            "Enter new priority (low/medium/high): ").strip().lower()
+        if new_value not in ['low', 'medium', 'high']:
+            print("Invalid priority.")
+            return
+    else:
+        new_value = input("Enter new value: ").strip()
+        if not new_value:
+            print("Value cannot be empty.")
+            return
+
+    success = update_task_db(conn, task_id, field, new_value)
+    if success:
+        print("Task updated successfully!")
+    else:
+        print("Task not found.")
+
 
 ''' OLD code 
 def fetch_tasks(conn):
@@ -167,4 +231,5 @@ if __name__ == "__main__":
     conn = connect_db()
     create_table(conn)
    # add_task(conn)
-    view_tasks(conn)
+   # view_tasks(conn)
+    update_task(conn)
