@@ -63,15 +63,18 @@ def add_task(conn):
     if priority not in ['low', 'medium', 'high']:
         print("Invalid priority. Defaulting to 'medium'.")
         priority = 'medium'
+    insert_task(conn, title, description, priority)
+    print("Task added successfully!")
+
+
+def insert_task(conn, title, description, priority):
     cursor = conn.cursor()
     cursor.execute(
         "INSERT INTO tasks(title,description,priority) VALUES (%s, %s, %s)",
         (title, description, priority)
-
     )
     conn.commit()
     cursor.close()
-    print("Task added successfully!")
 
 
 '''while True:
