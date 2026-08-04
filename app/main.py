@@ -3,8 +3,6 @@ import time
 import psycopg2
 from dotenv import load_dotenv
 
-# need further clarification for this line befire it was
-# load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
 
 load_dotenv()
 
@@ -247,58 +245,51 @@ def delete_task(conn):
     else:
         print("Something went wrong.")
 
-
-''' OLD code
-def fetch_tasks(conn):
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM tasks")
-    rows = cursor.fetchall()
-    conn.commit()
-    cursor.close()
-    return rows
-
-def view_tasks(conn):
-    rows = fetch_tasks(conn)
-    if not rows:
-        print("No tasks found.")
-        return
-
-    for row in rows:
-        print(f"ID: {row[0]}, Title: {row[1]}, Description: {row[2]}, Status: {row[3]}, Priority: {row[4]}, Created At: {row[5]}, Completed At: {row[6]}")
-'''
-
-'''while True:
-    print("\n===Task Tracker Menu===")
-print("1. Add Task")
-print("2. View Tasks")
-print("3. Update Task")
-print("4. Delete Task")
-print("5. Status")
-print("6. Exit")
-choice = input("Choose an option: ")
-'''
+# ========================= View Status ========================
 
 
 def view_status(conn):
     print("\n=== Task Status ===")
     cursor = conn.cursor()
-    # total task query
-    cursor.execute("select count(*) from tasks")
+
+    cursor.execute("SELECT COUNT(*) FROM tasks")
     total = cursor.fetchone()[0]
-    print(f"Total tasssks:{total}")
+    print(f"Total tasks: {total}")
 
-    # counts by staytus
-    cursor.execute("select status,count(*) from tasks group by status")
+    cursor.execute("SELECT status, COUNT(*) FROM tasks GROUP BY status")
     statuses = cursor.fetchall()
-    print("Tasks by status:")
+    print("\nTasks by status:")
     for row in statuses:
-        print(f"{row[0]}: {row[1]}")
+        print(f"  {row[0]}: {row[1]}")
 
-    cursor.execute("select priority,count(*) from tasks group by priority")
+    cursor.execute("SELECT priority, COUNT(*) FROM tasks GROUP BY priority")
     priorities = cursor.fetchall()
-    print("Tasks by priority:")
+    print("\nTasks by priority:")
     for row in priorities:
-        print(f"{row[0]}: {row[1]}")
+        print(f"  {row[0]}: {row[1]}")
+
+    cursor.execute("""
+        SELECT AVG(EXTRACT(EPOCH FROM (completed_at - created_at)) / 3600)
+        FROM tasks
+        WHERE completed_at IS NOT NULL
+    """)
+    avg = cursor.fetchone()[0]
+    if avg:
+        print(f"\nAverage completion time: {avg:.2f} hours")
+    else:
+        print("\nNo completed tasks yet.")
+
+    cursor.close()
+
+
+def show_menu():
+    print("\n=== Task Tracker Menu ===")
+    print("1. Add Task")
+    print("2. View Tasks")
+    print("3. Update Task")
+    print("4. Delete Task")
+    print("5. View Status")
+    print("6. Exit")
 
 
 if __name__ == "__main__":
@@ -317,7 +308,7 @@ if __name__ == "__main__":
         elif choice == "4":
             delete_task(conn)
         elif choice == "5":
-            view_stats(conn)
+            view_status(conn)
         elif choice == "6":
             print("Closing connection. Goodbye!")
             conn.close()
