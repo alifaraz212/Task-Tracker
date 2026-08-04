@@ -66,7 +66,7 @@ def add_task(conn):
     insert_task(conn, title, description, priority)
     print("Task added successfully!")
 
-# for user interaction
+# for db interaction
 
 
 def insert_task(conn, title, description, priority):
@@ -195,6 +195,58 @@ def update_task(conn):
     else:
         print("Task not found.")
 
+# ========================= Delete Task ========================
+
+
+def delete_task_db(conn, task_id):
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM tasks WHERE id = %s", (task_id,))
+    conn.commit()
+    success = cursor.rowcount > 0
+    cursor.close()
+    return success
+
+
+def fetch_task_by_id(conn, task_id):
+    cursor = conn.cursor()
+    cursor.execute(
+        "SELECT id, title, status, priority FROM tasks WHERE id = %s",
+        (task_id,)
+    )
+    task = cursor.fetchone()
+    cursor.close()
+    return task
+
+
+def delete_task(conn):
+    print("\n=== Delete Task ===")
+    try:
+        task_id = int(input("Enter task ID to delete: ").strip())
+    except ValueError:
+        print("Invalid ID. Please enter a number.")
+        return
+
+    task = fetch_task_by_id(conn, task_id)
+
+    if not task:
+        print("Task not found.")
+        return
+
+    print(
+        f"\nTask found: ID={task[0]}, Title={task[1]}, Status={task[2]}, Priority={task[3]}")
+    confirm = input(
+        "Are you sure you want to delete this task? (yes/no): ").strip().lower()
+
+    if confirm != "yes":
+        print("Delete cancelled.")
+        return
+
+    success = delete_task_db(conn, task_id)
+    if success:
+        print("Task deleted successfully.")
+    else:
+        print("Something went wrong.")
+
 
 ''' OLD code 
 def fetch_tasks(conn):
@@ -204,7 +256,6 @@ def fetch_tasks(conn):
     conn.commit()
     cursor.close()
     return rows
-
 
 def view_tasks(conn):
     rows = fetch_tasks(conn)
@@ -232,4 +283,5 @@ if __name__ == "__main__":
     create_table(conn)
    # add_task(conn)
    # view_tasks(conn)
-    update_task(conn)
+   # update_task(conn)
+    delete_task(conn)
