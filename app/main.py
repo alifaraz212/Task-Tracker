@@ -248,7 +248,7 @@ def delete_task(conn):
         print("Something went wrong.")
 
 
-''' OLD code 
+''' OLD code
 def fetch_tasks(conn):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM tasks")
@@ -278,10 +278,49 @@ print("6. Exit")
 choice = input("Choose an option: ")
 '''
 
+
+def view_status(conn):
+    print("\n=== Task Status ===")
+    cursor = conn.cursor()
+    # total task query
+    cursor.execute("select count(*) from tasks")
+    total = cursor.fetchone()[0]
+    print(f"Total tasssks:{total}")
+
+    # counts by staytus
+    cursor.execute("select status,count(*) from tasks group by status")
+    statuses = cursor.fetchall()
+    print("Tasks by status:")
+    for row in statuses:
+        print(f"{row[0]}: {row[1]}")
+
+    cursor.execute("select priority,count(*) from tasks group by priority")
+    priorities = cursor.fetchall()
+    print("Tasks by priority:")
+    for row in priorities:
+        print(f"{row[0]}: {row[1]}")
+
+
 if __name__ == "__main__":
     conn = connect_db()
     create_table(conn)
-   # add_task(conn)
-   # view_tasks(conn)
-   # update_task(conn)
-    delete_task(conn)
+    while True:
+        show_menu()
+        choice = input("Choose an option: ").strip()
+
+        if choice == "1":
+            add_task(conn)
+        elif choice == "2":
+            view_tasks(conn)
+        elif choice == "3":
+            update_task(conn)
+        elif choice == "4":
+            delete_task(conn)
+        elif choice == "5":
+            view_stats(conn)
+        elif choice == "6":
+            print("Closing connection. Goodbye!")
+            conn.close()
+            break
+        else:
+            print("Invalid option. Please choose between 1 and 6.")
