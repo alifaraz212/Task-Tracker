@@ -1,6 +1,7 @@
 import os
 import time
 import psycopg2
+import psycopg2.extras
 from dotenv import load_dotenv
 
 
@@ -78,7 +79,7 @@ def insert_task(conn, title, description, priority):
 
 
 def fetch_tasks(conn, filter_by=None, filter_value=None):
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     if filter_by and filter_value:
         query = f"SELECT id, title, description, status, priority, created_at FROM tasks WHERE {filter_by} = %s"
         cursor.execute(query, (filter_value,))
@@ -127,7 +128,7 @@ def view_tasks(conn):
     print("-" * 75)
     for row in rows:
         print(
-            f"{row[0]:<5} {row[1]:<20} {row[3]:<15} {row[4]:<10} {str(row[5]):<25}")
+            f"{row['id']:<5} {row['title']:<20} {row['status']:<15} {row['priority']:<10} {str(row['created_at']):<25}")
 
 # ========================= Update Task ========================
 
@@ -206,7 +207,7 @@ def delete_task_db(conn, task_id):
 
 
 def fetch_task_by_id(conn, task_id):
-    cursor = conn.cursor()
+    cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
     cursor.execute(
         "SELECT id, title, status, priority FROM tasks WHERE id = %s",
         (task_id,)
@@ -231,7 +232,7 @@ def delete_task(conn):
         return
 
     print(
-        f"\nTask found: ID={task[0]}, Title={task[1]}, Status={task[2]}, Priority={task[3]}")
+        f"\nTask found: ID={task['id']}, Title={task['title']}, Status={task['status']}, Priority={task['priority']}")
     confirm = input(
         "Are you sure you want to delete this task? (yes/no): ").strip().lower()
 
